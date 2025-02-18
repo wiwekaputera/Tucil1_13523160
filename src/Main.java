@@ -67,7 +67,56 @@ public class Main {
         // testParsing(puzzleData);
 
         // Init the board
-        board = new char[puzzleData.]
+        board = new char[puzzleData.getN()][puzzleData.getM()];
+        for (int i = 0; i < puzzleData.getN(); i++) {
+            for (int j = 0; j < puzzleData.getM(); j++) {
+                board[i][j] = '.';
+            }
+        }
+
+        // Call backtracking
+        // Execution time starts here
+        if (solvePuzzle(puzzleData.getBlocks(), 0)) {
+            System.out.println("Solusi ditemukan:");
+            printBoard();
+        } else {
+            System.out.println("Tidak ada solusi yang ditemukan.");
+        }
+    }
+
+    // TODO
+    private static boolean solvePuzzle(List<Block> blocks, int index) {
+        // Board condition check
+        if (isBoardFilled()) {
+            if (index < blocks.size()) {
+                System.out.println("Jumlah blok melebihi kapasitas papan.");
+                return false;
+            }
+            return true;
+        }
+
+        if (index == blocks.size()) {
+            return false;
+        }
+
+        // Brute force searching
+    }
+
+    public static isBoardFilled() {
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[i].length; j++) {
+                if (board[i][j] == '.') {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public static void printBoard() {
+        for (char[] row : board) {
+            System.out.println(new String(row));
+        }
     }
 
     private static PuzzleData readPuzzleData(String filePath) {
