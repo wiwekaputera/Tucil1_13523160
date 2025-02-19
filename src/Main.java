@@ -74,7 +74,7 @@ public class Main {
             }
         }
 
-        // Call backtracking
+        // Call Puzzle Solver
         // Execution time starts here
         if (solvePuzzle(puzzleData.getBlocks(), 0)) {
             System.out.println("Solusi ditemukan:");
@@ -84,7 +84,7 @@ public class Main {
         }
     }
 
-    // TODO
+    // Main solver algorithm
     private static boolean solvePuzzle(List<Block> blocks, int index) {
         // Board condition check
         if (isBoardFilled()) {
@@ -100,9 +100,137 @@ public class Main {
         }
 
         // Brute force searching
+        Block currentBlock = blocks.get(index);
+        for (int row = 0; row < board.length; row++) {
+            for (int col = 0; col < board[0].length; col++) {
+                for (char[][] orientation : generateOrientations(currentBlock.getShape())) {
+                    if (validPlace(orientation, row, col)) {
+                        placeBlock(orientation, row, col, currentBlock.getIdentifier());
+                        if (solvePuzzle(blocks, index + 1)) {
+                            return true;
+                        }
+                        removeBlock(orientation, row, col);
+                    }
+                }
+            }
+        }
+        return false;
     }
 
-    public static isBoardFilled() {
+    private static List<char[][]> generateOrientations(char[][] shape) {
+        List<char[][]> orientations = new ArrayList<>();
+        orientations.add(shape);
+
+        // Original shape rotations
+        char[][] rot90 = rotate90(shape);
+        char[][] rot180 = rotate90(rot90);
+        char[][] rot270 = rotate90(rot180);
+
+        if (!contains(orientations, rot90)) orientations.add(rot90);
+        if (!contains(orientations, rot180)) orientations.add(rot180);
+        if (!contains(orientations, rot270)) orientations.add(rot270);
+
+        // Reflect shape & reflected shape rotations
+        char[][] reflected = reflect(shape);
+        char[][] refRot90 = rotate90(reflected);
+        char[][] refRot180 = rotate90(refRot90);
+        char[][] refRot270 = rotate90(refRot180);
+
+        if (!contains(orientations, reflected)) orientations.add(reflected);
+        if (!contains(orientations, refRot90)) orientations.add(refRot90);
+        if (!contains(orientations, refRot180)) orientations.add(refRot180);
+        if (!contains(orientations, refRot270)) orientations.add(refRot270);
+        
+        return orientations;
+    }
+
+    private static char[][] rotate90(char[][] shape) {
+        int m = shape.length;
+        int n = shape[0].length;
+        char[][] rotated = new char[n][m];
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                rotated[j][m - 1 - i] = shape[i][j];
+            }
+        }
+        return rotated;
+    }
+
+    private static char[][] reflect(char[][] shape) {
+        int m = shape.length;
+        int n = shape[0].length;
+        char[][] reflected = new char[m][n];
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                reflected[i][j] = shape[i][n - 1 - j];
+            }
+        }
+        return reflected;
+    }
+
+    private static boolean contains(List<char[][]> list, char[][] candidate) {
+        for (char[][] shape : list) {
+            if (shapesEqual(shape, candidate)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private static boolean shapesEqual(char[][] a, char[][] b) {
+        if (a.length != b.length) return false;
+        if (a[0].length != b[0].length) return false;
+        
+        for (int i = 0; i < a.length; i++) {
+            if (a[i].length != b[i].length) return false;
+            for (int j = 0; j < a[i].length; j++) {
+                if (a[i][j] != b[i][j])
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean validPlace(char[][] shape, int row, int col) {
+        for (int r = 0; r < shape.length; r++) {
+            for (int c = 0; c < shape[r].length; c++) {
+                if (shape[r][c] != '.') {
+                    int boardR = row + r;
+                    int boardC = col + c;
+                    if (boardR < 0 || boardR >= board.length ||
+                        boardC < 0 || boardC >= board[0].length) {
+                        return false;
+                    }
+                    if (board[boardR][boardC] != '.') {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private static void placeBlock(char[][] shape, int row, int col, char id) {
+        for (int r = 0; r < shape.length; r++) {
+            for (int c = 0; c < shape[r].length; c++) {
+                if (shape[r][c] != '.') {
+                    board[row + r][col + c] = id;
+                }
+            }
+        }
+    }
+
+    private static void removeBlock(char[][] shape, int row, int col) {
+        for (int r = 0; r < shape.length; r++) {
+            for (int c = 0; c < shape[r].length; c++) {
+                if (shape[r][c] != '.') {
+                    board[row + r][col + c] = '.';
+                }
+            }
+        }
+    }
+
+    public static boolean isBoardFilled() {
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
                 if (board[i][j] == '.') {
@@ -123,30 +251,29 @@ public class Main {
         int N = 0, M = 0, P = 0;
         String S = "";
         List<Block> blocks = new ArrayList<>();
-
+    
         try (Scanner fileScanner = new Scanner(new File(filePath))) {
+            // 1. Read N M P
             if (fileScanner.hasNextLine()) {
                 String[] firstLine = fileScanner.nextLine().trim().split("\\s+");
                 N = Integer.parseInt(firstLine[0]);
                 M = Integer.parseInt(firstLine[1]);
                 P = Integer.parseInt(firstLine[2]);
             }
-
+    
+            // 2. Read S
             if (fileScanner.hasNextLine()) {
                 S = fileScanner.nextLine().trim();
             }
-
-            List<String> lines = new ArrayList<>();
-            while (fileScanner.hasNextLine()) {
-                String line = fileScanner.nextLine().trim();
-                if (!line.isEmpty()) {
-                    lines.add(line);
-                }
-            }
-
+    
+            // 3. Read remaining lines and group them by block.
             List<List<String>> groups = new ArrayList<>();
             List<String> currentGroup = new ArrayList<>();
-            for (String line : lines) {
+            while (fileScanner.hasNextLine()) {
+                String line = fileScanner.nextLine().trim();
+                if (line.isEmpty()) {
+                    continue;
+                }
                 if (currentGroup.isEmpty()) {
                     currentGroup.add(line);
                 } else {
@@ -162,22 +289,31 @@ public class Main {
             if (!currentGroup.isEmpty()) {
                 groups.add(currentGroup);
             }
-
+    
             for (List<String> group : groups) {
-                char identifier = group.get(0).charAt(0);
-                char[][] shape = new char[group.size()][];
-                for (int i = 0; i < group.size(); i++) {
-                    shape[i] = group.get(i).toCharArray();
+                int maxWidth = 0;
+                for (String shapeLine : group) {
+                    if (shapeLine.length() > maxWidth) {
+                        maxWidth = shapeLine.length();
+                    }
                 }
-                blocks.add(new Block(identifier, shape));
-            }
-            if (blocks.size() != P) {
-                System.out.println("Jumlah block tidak sesuai dengan P. Ditemukan: " + blocks.size() + ", sedangkan P: " + P);
+    
+                char[][] shapeArray = new char[group.size()][maxWidth];
+                for (int i = 0; i < group.size(); i++) {
+                    String rowText = group.get(i);
+                    while (rowText.length() < maxWidth) {
+                        rowText += ".";
+                    }
+                    shapeArray[i] = rowText.toCharArray();
+                }
+    
+                char id = group.get(0).charAt(0);
+                blocks.add(new Block(id, shapeArray));
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
+    
         return new PuzzleData(N, M, P, S, blocks);
     }
 
