@@ -54,7 +54,8 @@ class Block {
 }
 
 public class Main {
-    static char[][] board;
+    private static char[][] board;
+    private static long kasusCount = 0;
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -74,18 +75,26 @@ public class Main {
             }
         }
 
+        // Start timer
+        long startTime = System.currentTimeMillis();
+
         // Call Puzzle Solver
-        // Execution time starts here
         if (solvePuzzle(puzzleData.getBlocks(), 0)) {
             System.out.println("Solusi ditemukan:");
             printBoard();
         } else {
             System.out.println("Tidak ada solusi yang ditemukan.");
         }
+
+        // End time
+        long endTime = System.currentTimeMillis();
+        System.out.println("Waktu pencarian: " + (endTime - startTime) + " ms");
+        System.out.println("Jumlah kasus yang ditinjau: " + kasusCount);
     }
 
     // Main solver algorithm
     private static boolean solvePuzzle(List<Block> blocks, int index) {
+
         // Board condition check
         if (isBoardFilled()) {
             if (index < blocks.size()) {
@@ -106,6 +115,7 @@ public class Main {
                 for (char[][] orientation : generateOrientations(currentBlock.getShape())) {
                     if (validPlace(orientation, row, col)) {
                         placeBlock(orientation, row, col, currentBlock.getIdentifier());
+                        kasusCount++;
                         if (solvePuzzle(blocks, index + 1)) {
                             return true;
                         }
@@ -230,7 +240,7 @@ public class Main {
         }
     }
 
-    public static boolean isBoardFilled() {
+    private static boolean isBoardFilled() {
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
                 if (board[i][j] == '.') {
@@ -241,7 +251,7 @@ public class Main {
         return true;
     }
 
-    public static void printBoard() {
+    private static void printBoard() {
         for (char[] row : board) {
             System.out.println(new String(row));
         }
