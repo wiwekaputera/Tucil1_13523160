@@ -61,54 +61,57 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Masukkan path dari input file: ");
         String filePath = scanner.nextLine();
-
+    
         PuzzleData puzzleData = readPuzzleData(filePath);
-
-        // Debugging Statement
-        // testParsing(puzzleData);
-
-        // Init the board
+    
         board = new char[puzzleData.getN()][puzzleData.getM()];
         for (int i = 0; i < puzzleData.getN(); i++) {
             for (int j = 0; j < puzzleData.getM(); j++) {
                 board[i][j] = '.';
             }
         }
+        
+        try (PrintWriter writer = new PrintWriter(new File("result.txt"))) {
+            // Start timer
+            long startTime = System.currentTimeMillis();
+    
+            List<char[][]> boardState = new ArrayList<>();
+            boolean solved = solvePuzzle(puzzleData.getBlocks(), 0, boardState, writer);
+    
+            // End timer
+            long endTime = System.currentTimeMillis();
 
-        // Start timer
-        long startTime = System.currentTimeMillis();
-
-        // Call Puzzle Solver
-        if (solvePuzzle(puzzleData.getBlocks(), 0)) {
-            System.out.println("Solusi ditemukan:");
-            printBoard();
-        } else {
-            System.out.println("Tidak ada solusi yang ditemukan.");
+            if (solved) {
+                System.out.println("Solusi ditemukan:");
+                printBoard();
+            } else {
+                System.out.println("Tidak ada solusi yang ditemukan.");
+            }
+            System.out.println("Waktu pencarian: " + (endTime - startTime) + " ms");
+            System.out.println("Jumlah kasus yang ditinjau: " + kasusCount);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         }
-
-        // End time
-        long endTime = System.currentTimeMillis();
-        System.out.println("Waktu pencarian: " + (endTime - startTime) + " ms");
-        System.out.println("Jumlah kasus yang ditinjau: " + kasusCount);
     }
 
     // Main solver algorithm
-    private static boolean solvePuzzle(List<Block> blocks, int index) {
-
-        // Board condition check
+    private static boolean solvePuzzle(List<Block> blocks, int index, List<char[][]> boardState, PrintWriter writer) {
         if (isBoardFilled()) {
             if (index < blocks.size()) {
-                System.out.println("Jumlah blok melebihi kapasitas papan.");
+                writer.println("Jumlah blok melebihi kapasitas papan.");
+                writer.println();
                 return false;
             }
+            // Print board
+            printBoardStateToFile(copyBoard(board), writer);
+            writer.println();
+            writer.flush();
             return true;
         }
-
         if (index == blocks.size()) {
             return false;
         }
-
-        // Brute force searching
+        
         Block currentBlock = blocks.get(index);
         for (int row = 0; row < board.length; row++) {
             for (int col = 0; col < board[0].length; col++) {
@@ -116,10 +119,22 @@ public class Main {
                     if (validPlace(orientation, row, col)) {
                         placeBlock(orientation, row, col, currentBlock.getIdentifier());
                         kasusCount++;
-                        if (solvePuzzle(blocks, index + 1)) {
+
+                        // Print board after block placement
+                        printBoardStateToFile(copyBoard(board), writer);
+                        writer.println();
+                        writer.flush();
+        
+                        if (solvePuzzle(blocks, index + 1, boardState, writer)) {
                             return true;
                         }
+        
                         removeBlock(orientation, row, col);
+
+                        // Print board after block removal (backtracking)
+                        printBoardStateToFile(copyBoard(board), writer);
+                        writer.println();
+                        writer.flush();
                     }
                 }
             }
@@ -257,6 +272,24 @@ public class Main {
         }
     }
 
+    private static char[][] copyBoard(char[][] original) {
+        int rows = original.length;
+        int cols = original[0].length;
+        char[][] copy = new char[rows][cols];
+        for (int i = 0; i < rows; i++) {
+            System.arraycopy(original[i], 0, copy[i], 0, cols);
+        }
+        return copy;
+    }
+
+    private static void printBoardStateToFile(char[][] boardState, PrintWriter writer) {
+        for (char[] row : boardState) {
+            writer.println(new String(row));
+        }
+        writer.println();
+        writer.flush();
+    }
+
     private static PuzzleData readPuzzleData(String filePath) {
         int N = 0, M = 0, P = 0;
         String S = "";
@@ -276,18 +309,20 @@ public class Main {
                 S = fileScanner.nextLine().trim();
             }
     
-            // 3. Read remaining lines and group them by block.
+            // 3. Read remaining lines and group by block.
             List<List<String>> groups = new ArrayList<>();
             List<String> currentGroup = new ArrayList<>();
             while (fileScanner.hasNextLine()) {
-                String line = fileScanner.nextLine().trim();
-                if (line.isEmpty()) {
+                String line = fileScanner.nextLine();
+                if (line.trim().isEmpty()) {
                     continue;
                 }
+                char firstChar = line.stripLeading().charAt(0);
                 if (currentGroup.isEmpty()) {
                     currentGroup.add(line);
                 } else {
-                    if (line.charAt(0) == currentGroup.get(0).charAt(0)) {
+                    char firstCharCurrentGroup = currentGroup.get(0).stripLeading().charAt(0);
+                    if (firstChar == firstCharCurrentGroup) {
                         currentGroup.add(line);
                     } else {
                         groups.add(currentGroup);
@@ -311,13 +346,14 @@ public class Main {
                 char[][] shapeArray = new char[group.size()][maxWidth];
                 for (int i = 0; i < group.size(); i++) {
                     String rowText = group.get(i);
+                    rowText = rowText.replace(' ', '.');
                     while (rowText.length() < maxWidth) {
                         rowText += ".";
                     }
                     shapeArray[i] = rowText.toCharArray();
                 }
     
-                char id = group.get(0).charAt(0);
+                char id = group.get(0).stripLeading().charAt(0);
                 blocks.add(new Block(id, shapeArray));
             }
         } catch (FileNotFoundException e) {
