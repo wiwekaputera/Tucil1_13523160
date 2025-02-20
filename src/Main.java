@@ -54,8 +54,8 @@ class Block {
 }
 
 public class Main {
-    private static char[][] board;
-    private static long kasusCount = 0;
+    public static char[][] board;
+    public static long kasusCount = 0;
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -95,7 +95,7 @@ public class Main {
     }
 
     // Main solver algorithm
-    private static boolean solvePuzzle(List<Block> blocks, int index, List<char[][]> boardState, PrintWriter writer) {
+    public static boolean solvePuzzle(List<Block> blocks, int index, List<char[][]> boardState, PrintWriter writer) {
         if (isBoardFilled()) {
             if (index < blocks.size()) {
                 writer.println("Jumlah blok melebihi kapasitas papan.");
@@ -151,9 +151,13 @@ public class Main {
         char[][] rot180 = rotate90(rot90);
         char[][] rot270 = rotate90(rot180);
 
-        if (!contains(orientations, rot90)) orientations.add(rot90);
-        if (!contains(orientations, rot180)) orientations.add(rot180);
-        if (!contains(orientations, rot270)) orientations.add(rot270);
+        // if (!contains(orientations, rot90)) orientations.add(rot90);
+        // if (!contains(orientations, rot180)) orientations.add(rot180);
+        // if (!contains(orientations, rot270)) orientations.add(rot270);
+
+        orientations.add(rot90);
+        orientations.add(rot180);
+        orientations.add(rot270);
 
         // Reflect shape & reflected shape rotations
         char[][] reflected = reflect(shape);
@@ -161,10 +165,15 @@ public class Main {
         char[][] refRot180 = rotate90(refRot90);
         char[][] refRot270 = rotate90(refRot180);
 
-        if (!contains(orientations, reflected)) orientations.add(reflected);
-        if (!contains(orientations, refRot90)) orientations.add(refRot90);
-        if (!contains(orientations, refRot180)) orientations.add(refRot180);
-        if (!contains(orientations, refRot270)) orientations.add(refRot270);
+        // if (!contains(orientations, reflected)) orientations.add(reflected);
+        // if (!contains(orientations, refRot90)) orientations.add(refRot90);
+        // if (!contains(orientations, refRot180)) orientations.add(refRot180);
+        // if (!contains(orientations, refRot270)) orientations.add(refRot270);
+
+        orientations.add(reflected);
+        orientations.add(refRot90);
+        orientations.add(refRot180);
+        orientations.add(refRot270);
         
         return orientations;
     }
@@ -290,7 +299,7 @@ public class Main {
         writer.flush();
     }
 
-    private static PuzzleData readPuzzleData(String filePath) {
+    public static PuzzleData readPuzzleData(String filePath) {
         int N = 0, M = 0, P = 0;
         String S = "";
         List<Block> blocks = new ArrayList<>();
