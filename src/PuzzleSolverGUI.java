@@ -84,7 +84,6 @@ public class PuzzleSolverGUI {
 
                 } catch (FileNotFoundException ex) {
                     ex.printStackTrace();
-                    resultArea.append("Error: Unable to write to result.txt\n");
                 }
             }
         });
