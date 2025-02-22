@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.*;
+import java.awt.Color;
 
 class PuzzleData {
     private int N, M, P;
@@ -37,43 +38,44 @@ class Block {
 public class Main {
     public static char[][] board;
     public static long kasusCount = 0;
-    
-    public static Map<Character, String> shapeColor = new HashMap<>();
+
     public static String resetColor = "\u001B[0m";
+    public static Map<Character, Color> shapeColor = new HashMap<>();
 
     static {
-        shapeColor.put('A', "\u001B[38;5;1m");   // Maroon
-        shapeColor.put('B', "\u001B[38;5;2m");   // Green
-        shapeColor.put('C', "\u001B[38;5;3m");   // Olive
-        shapeColor.put('D', "\u001B[38;5;4m");   // Navy
-        shapeColor.put('E', "\u001B[38;5;5m");   // Purple
-        shapeColor.put('F', "\u001B[38;5;6m");   // Teal
-        shapeColor.put('G', "\u001B[38;5;7m");   // Silver
-        shapeColor.put('H', "\u001B[38;5;8m");   // Grey
-        shapeColor.put('I', "\u001B[38;5;9m");   // Red
-        shapeColor.put('J', "\u001B[38;5;10m");  // Lime
-        shapeColor.put('K', "\u001B[38;5;11m");  // Yellow
-        shapeColor.put('L', "\u001B[38;5;12m");  // Blue
-        shapeColor.put('M', "\u001B[38;5;13m");  // Fuchsia
-        shapeColor.put('N', "\u001B[38;5;14m");  // Aqua
-        shapeColor.put('O', "\u001B[38;5;15m");  // White
-        shapeColor.put('P', "\u001B[38;5;16m");  // Grey0
-        shapeColor.put('Q', "\u001B[38;5;17m");  // NavyBlue
-        shapeColor.put('R', "\u001B[38;5;18m");  // DarkBlue
-        shapeColor.put('S', "\u001B[38;5;19m");  // Blue3
-        shapeColor.put('T', "\u001B[38;5;20m");  // Blue3
-        shapeColor.put('U', "\u001B[38;5;21m");  // Blue1
-        shapeColor.put('V', "\u001B[38;5;22m");  // DarkGreen
-        shapeColor.put('W', "\u001B[38;5;23m");  // DeepSkyBlue4
-        shapeColor.put('X', "\u001B[38;5;24m");  // DeepSkyBlue4
-        shapeColor.put('Y', "\u001B[38;5;25m");  // DeepSkyBlue4
-        shapeColor.put('Z', "\u001B[38;5;26m");  // DodgerBlue3
+        shapeColor.put('A', new Color(128, 0, 0));   // Maroon
+        shapeColor.put('B', new Color(0, 128, 0));   // Green
+        shapeColor.put('C', new Color(128, 128, 0)); // Olive
+        shapeColor.put('D', new Color(0, 0, 128));   // Navy
+        shapeColor.put('E', new Color(128, 0, 128)); // Purple
+        shapeColor.put('F', new Color(0, 128, 128)); // Teal
+        shapeColor.put('G', new Color(192, 192, 192)); // Silver
+        shapeColor.put('H', new Color(128, 128, 128)); // Grey
+        shapeColor.put('I', new Color(255, 0, 0));   // Red
+        shapeColor.put('J', new Color(0, 255, 0));   // Lime
+        shapeColor.put('K', new Color(255, 255, 0)); // Yellow
+        shapeColor.put('L', new Color(0, 0, 255));   // Blue
+        shapeColor.put('M', new Color(255, 0, 255)); // Fuchsia
+        shapeColor.put('N', new Color(0, 255, 255)); // Aqua
+        shapeColor.put('O', new Color(255, 255, 255)); // White
+        shapeColor.put('P', new Color(0, 0, 0));     // Grey0
+        shapeColor.put('Q', new Color(0, 0, 95));    // NavyBlue
+        shapeColor.put('R', new Color(0, 0, 135));   // DarkBlue
+        shapeColor.put('S', new Color(0, 0, 175));   // Blue3
+        shapeColor.put('T', new Color(0, 0, 215));   // Blue3
+        shapeColor.put('U', new Color(0, 0, 255));   // Blue1
+        shapeColor.put('V', new Color(0, 95, 0));    // DarkGreen
+        shapeColor.put('W', new Color(0, 95, 95));   // DeepSkyBlue4
+        shapeColor.put('X', new Color(0, 95, 135));  // DeepSkyBlue4
+        shapeColor.put('Y', new Color(0, 95, 175));  // DeepSkyBlue4
+        shapeColor.put('Z', new Color(0, 95, 215));  // DodgerBlue3
     }
     
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Masukkan path dari input file: ");
         String filePath = scanner.nextLine();
+        scanner.close();
     
         PuzzleData puzzleData = readPuzzleData(filePath);
     
@@ -108,12 +110,7 @@ public class Main {
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
                 char cell = board[i][j];
-                if (cell == '.') {
-                    System.out.print(cell);
-                } else {
-                    String color = shapeColor.getOrDefault(cell, "");
-                    System.out.print(color + cell + resetColor);
-                }
+                System.out.print(cell);
             }
             System.out.println();
         }
@@ -231,13 +228,13 @@ public class Main {
     
     private static List<char[][]> generateOrientations(char[][] shape) {
         List<char[][]> orientations = new ArrayList<>();
-        orientations.add(shape);
     
         // Original shape rotations
         char[][] rot90 = rotate90(shape);
         char[][] rot180 = rotate90(rot90);
         char[][] rot270 = rotate90(rot180);
     
+        orientations.add(shape);
         orientations.add(rot90);
         orientations.add(rot180);
         orientations.add(rot270);
