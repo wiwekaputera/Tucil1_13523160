@@ -100,7 +100,6 @@ public class Main {
 
         long startTime = System.currentTimeMillis();
         List<char[][]> boardState = new ArrayList<>();
-        // Pass 'null' or remove the writer parameter if solvePuzzle supports it
         boolean solved = solvePuzzle(puzzleData.getBlocks(), 0, boardState, null);
         long endTime = System.currentTimeMillis();
 
@@ -147,12 +146,44 @@ public class Main {
         }
         return sb.toString();
     }
+
+    public static String toAnsi(Color color) {
+        if (color.equals(new Color(128, 0, 0))) return "\u001B[31m";
+        else if (color.equals(new Color(0, 128, 0))) return "\u001B[32m";
+        else if (color.equals(new Color(128, 128, 0))) return "\u001B[33m";
+        else if (color.equals(new Color(0, 0, 128))) return "\u001B[34m";
+        else if (color.equals(new Color(128, 0, 128))) return "\u001B[35m";
+        else if (color.equals(new Color(0, 128, 128))) return "\u001B[36m";
+        else if (color.equals(new Color(192, 192, 192))) return "\u001B[37m";
+        else if (color.equals(new Color(128, 128, 128))) return "\u001B[90m";
+        else if (color.equals(new Color(255, 0, 0))) return "\u001B[91m";
+        else if (color.equals(new Color(0, 255, 0))) return "\u001B[92m";
+        else if (color.equals(new Color(255, 255, 0))) return "\u001B[93m";
+        else if (color.equals(new Color(0, 0, 255))) return "\u001B[94m";
+        else if (color.equals(new Color(255, 0, 255))) return "\u001B[95m";
+        else if (color.equals(new Color(0, 255, 255))) return "\u001B[96m";
+        else if (color.equals(new Color(255, 255, 255))) return "\u001B[97m";
+        else if (color.equals(new Color(0, 0, 0))) return "\u001B[30m";
+        else if (color.equals(new Color(0, 0, 95))) return "\u001B[34m";
+        else if (color.equals(new Color(0, 0, 135))) return "\u001B[34m";
+        else if (color.equals(new Color(0, 0, 175))) return "\u001B[94m";
+        else if (color.equals(new Color(0, 0, 215))) return "\u001B[94m";
+        else if (color.equals(new Color(0, 0, 255))) return "\u001B[94m";
+        else if (color.equals(new Color(0, 95, 0))) return "\u001B[32m";
+        else if (color.equals(new Color(0, 95, 95))) return "\u001B[36m";
+        else if (color.equals(new Color(0, 95, 135))) return "\u001B[34m";
+        else if (color.equals(new Color(0, 95, 175))) return "\u001B[94m";
+        else if (color.equals(new Color(0, 95, 215))) return "\u001B[94m";
+        else return "\u001B[0m";
+    }
     
     public static void printColoredBoard() {
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
                 char cell = board[i][j];
-                System.out.print(cell);
+                Color c = Main.shapeColor.getOrDefault(cell, Color.WHITE);
+                String ansiColor = toAnsi(c);
+                System.out.print(ansiColor + cell + resetColor);
             }
             System.out.println();
         }
@@ -181,44 +212,16 @@ public class Main {
                     if (validPlace(orientation, row, col)) {
                         placeBlock(orientation, row, col, currentBlock.getIdentifier());
                         kasusCount++;
-                        
-                        // Snapshot after placement
-                        // printBoardStateToFile(copyBoard(board), writer);
-                        // writer.println();
-                        // writer.flush();
         
                         if (solvePuzzle(blocks, index + 1, boardState, writer)) {
                             return true;
                         }
                         removeBlock(orientation, row, col);
-                        
-                        // Snapshot after removal (backtracking)
-                        // printBoardStateToFile(copyBoard(board), writer);
-                        // writer.println();
-                        // writer.flush();
                     }
                 }
             }
         }
         return false;
-    }
-    
-    private static void printBoardStateToFile(char[][] boardState, PrintWriter writer) {
-        for (char[] row : boardState) {
-            writer.println(new String(row));
-        }
-        writer.println();
-        writer.flush();
-    }
-    
-    private static char[][] copyBoard(char[][] original) {
-        int rows = original.length;
-        int cols = original[0].length;
-        char[][] copy = new char[rows][cols];
-        for (int i = 0; i < rows; i++) {
-            System.arraycopy(original[i], 0, copy[i], 0, cols);
-        }
-        return copy;
     }
     
     private static boolean isBoardFilled() {
@@ -390,21 +393,5 @@ public class Main {
         }
     
         return new PuzzleData(N, M, P, S, blocks);
-    }
-
-    private static void testParsing(PuzzleData puzzleData) {
-        System.out.println("N = " + puzzleData.getN());
-        System.out.println("M = " + puzzleData.getM());
-        System.out.println("P = " + puzzleData.getP());
-        System.out.println("S = " + puzzleData.getS());
-    
-        System.out.println("List of Blocks:");
-        for (Block block : puzzleData.getBlocks()) {
-            System.out.println("Identifier: " + block.getIdentifier());
-            for (char[] row : block.getShape()) {
-                System.out.println(new String(row));
-            }
-            System.out.println("---");
-        }
     }
 }
