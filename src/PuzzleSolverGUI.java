@@ -37,14 +37,26 @@ public class PuzzleSolverGUI {
         JPanel filePathPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JLabel fileLabel = new JLabel("File Path:");
         JTextField filePathField = new JTextField(20);
+        JButton browseButton = new JButton("Browse");
+
+        browseButton.addActionListener(e -> {
+            JFileChooser fc = new JFileChooser();
+            // Optional: restrict to .txt files
+            fc.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Text Files", "txt"));
+            int choice = fc.showOpenDialog(panel);
+            if (choice == JFileChooser.APPROVE_OPTION) {
+                File file = fc.getSelectedFile();
+                filePathField.setText(file.getAbsolutePath());
+            }
+        });
+
         filePathPanel.add(fileLabel);
         filePathPanel.add(filePathField);
+        filePathPanel.add(browseButton);
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 3;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
-        gbc.weighty = 0.0;
         panel.add(filePathPanel, gbc);
 
         // Row 1: Solve Puzzle Button
@@ -79,7 +91,7 @@ public class PuzzleSolverGUI {
         panel.add(infoPanel, gbc);
 
         // Row 4: Save Results Button
-        saveButton = new JButton("Save Results");
+        saveButton = new JButton("Simpan Hasil");
         saveButton.setVisible(false);
         gbc.gridx = 0;
         gbc.gridy = 4;
@@ -90,7 +102,7 @@ public class PuzzleSolverGUI {
         // Save button action
         saveButton.addActionListener(e -> {
             JFileChooser fc = new JFileChooser();
-            fc.setDialogTitle("Save Results");
+            fc.setDialogTitle("Simpan Hasil");
             int choice = fc.showSaveDialog(panel);
             if (choice == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();
@@ -110,7 +122,6 @@ public class PuzzleSolverGUI {
         solveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Clear previous messages and hide the save button
                 solveStatusLabel.setText("");
                 timeLabel.setText("");
                 countLabel.setText("");
@@ -118,7 +129,13 @@ public class PuzzleSolverGUI {
                 finalSolution = "";
 
                 String filePath = filePathField.getText().trim();
-                if (filePath.isEmpty()) {
+                if (filePath.isEmpty() || !filePath.toLowerCase().endsWith(".txt")) {
+                    solveStatusLabel.setText("Masukkan file path yang valid.");
+                    return;
+                }
+            
+                File f = new File(filePath);
+                if (!f.exists() || f.isDirectory()) {
                     solveStatusLabel.setText("Masukkan file path yang valid.");
                     return;
                 }
@@ -153,13 +170,11 @@ public class PuzzleSolverGUI {
                             }
                         });
                         timer.start();
-                        try (PrintWriter writer = new PrintWriter(new File("result.txt"))) {
-                            boolean solved = Main.solvePuzzle(puzzleData.getBlocks(), 0, new ArrayList<>(), writer);
-                            if (solved) {
-                                finalSolution = boardToString(Main.board);
-                            }
-                            return solved;
+                        boolean solved = Main.solvePuzzle(puzzleData.getBlocks(), 0, new ArrayList<>(), null);
+                        if (solved) {
+                            finalSolution = boardToString(Main.board);
                         }
+                        return solved;
                     }
 
                     @Override

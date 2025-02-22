@@ -73,37 +73,79 @@ public class Main {
     
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        System.out.print("Masukkan path dari input file: ");
-        String filePath = scanner.nextLine();
-        scanner.close();
-    
+        String filePath;
+        while (true) {
+            System.out.print("Masukkan path dari input file: ");
+            filePath = scanner.nextLine().trim();
+            if (filePath.isEmpty() || !filePath.toLowerCase().endsWith(".txt")) {
+                System.out.println("Masukkan file path yang valid.");
+                continue;
+            }
+            File f = new File(filePath);
+            if (!f.exists() || f.isDirectory()) {
+                System.out.println("Masukkan file path yang valid.");
+                continue;
+            }
+            break;
+        }
+
         PuzzleData puzzleData = readPuzzleData(filePath);
-    
+
         board = new char[puzzleData.getN()][puzzleData.getM()];
         for (int i = 0; i < puzzleData.getN(); i++) {
             for (int j = 0; j < puzzleData.getM(); j++) {
                 board[i][j] = '.';
             }
         }
-    
-        try (PrintWriter writer = new PrintWriter(new File("result.txt"))) {
-            long startTime = System.currentTimeMillis();
-            List<char[][]> boardState = new ArrayList<>();
-            boolean solved = solvePuzzle(puzzleData.getBlocks(), 0, boardState, writer);
-            long endTime = System.currentTimeMillis();
-            if (solved) {
-                System.out.println("Solusi ditemukan:");
-                System.out.println();
-                printColoredBoard();
-                System.out.println();
-            } else {
-                System.out.println("Tidak ada solusi yang ditemukan.");
-            }
+
+        long startTime = System.currentTimeMillis();
+        List<char[][]> boardState = new ArrayList<>();
+        // Pass 'null' or remove the writer parameter if solvePuzzle supports it
+        boolean solved = solvePuzzle(puzzleData.getBlocks(), 0, boardState, null);
+        long endTime = System.currentTimeMillis();
+
+        if (solved) {
+            System.out.println("Solusi ditemukan:");
+            System.out.println();
+            printColoredBoard();
+            System.out.println();
             System.out.println("Waktu pencarian: " + (endTime - startTime) + " ms");
             System.out.println("Jumlah kasus yang ditinjau: " + kasusCount);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+
+            System.out.print("Simpan hasil? (Y/N): ");
+            String saveChoice = scanner.nextLine().trim().toUpperCase();
+            if (saveChoice.equals("Y")) {
+                System.out.print("Masukkan file path output hasil: ");
+                String outputPath = scanner.nextLine().trim();
+                if (!outputPath.toLowerCase().endsWith(".txt")) {
+                    outputPath += ".txt";
+                }
+                try (PrintWriter pw = new PrintWriter(outputPath)) {
+                    pw.print(boardToString(board));
+                    System.out.println("Hasil disimpan ke " + outputPath);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } else {
+            System.out.println("Tidak ada solusi yang ditemukan.");
+            System.out.println("Waktu pencarian: " + (endTime - startTime) + " ms");
+            System.out.println("Jumlah kasus yang ditinjau: " + kasusCount);
         }
+
+        scanner.close();
+    }
+
+    private static String boardToString(char[][] board) {
+        if (board == null) return "";
+        StringBuilder sb = new StringBuilder();
+        for (char[] row : board) {
+            for (char c : row) {
+                sb.append(c);
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
     }
     
     public static void printColoredBoard() {
@@ -123,9 +165,9 @@ public class Main {
                 writer.println();
                 return false;
             }
-            printBoardStateToFile(copyBoard(board), writer);
-            writer.println();
-            writer.flush();
+            // printBoardStateToFile(copyBoard(board), writer);
+            // writer.println();
+            // writer.flush();
             return true;
         }
         if (index == blocks.size()) {
@@ -141,9 +183,9 @@ public class Main {
                         kasusCount++;
                         
                         // Snapshot after placement
-                        printBoardStateToFile(copyBoard(board), writer);
-                        writer.println();
-                        writer.flush();
+                        // printBoardStateToFile(copyBoard(board), writer);
+                        // writer.println();
+                        // writer.flush();
         
                         if (solvePuzzle(blocks, index + 1, boardState, writer)) {
                             return true;
@@ -151,9 +193,9 @@ public class Main {
                         removeBlock(orientation, row, col);
                         
                         // Snapshot after removal (backtracking)
-                        printBoardStateToFile(copyBoard(board), writer);
-                        writer.println();
-                        writer.flush();
+                        // printBoardStateToFile(copyBoard(board), writer);
+                        // writer.println();
+                        // writer.flush();
                     }
                 }
             }
